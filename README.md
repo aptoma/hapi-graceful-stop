@@ -24,3 +24,29 @@ server.start(function () {
 });
 
 ```
+
+Running function after `server.stop()` e.g for ending db connections.
+
+```javascript
+
+var Hapi = require('hapi');
+
+var server = new Hapi.Server();
+server.connection({ port: 3000 });
+
+var opts = {
+	timeout: 2000, // optional, defaults to 5000 ms
+	afterStopTimeout: 1000, // optional, defaults to 2000 ms
+	afterStop: function (done) {
+		// do cleanup
+		done();
+	}
+};
+
+server.register({register: require('@aptoma/hapi-graceful-stop'), options: opts});
+
+server.start(function () {
+    console.log('Server running at:', server.info.uri);
+});
+
+```
