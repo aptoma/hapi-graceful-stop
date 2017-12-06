@@ -1,3 +1,5 @@
+## [**2.0.0**]
+* [[e2adac1](../../commit/e2adac1)] Support for Hapi 17. node >= 8 required
 
 ## [**1.1.0**]
 
