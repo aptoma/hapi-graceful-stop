@@ -12,16 +12,13 @@ This module is installed via npm:
 
 ```javascript
 
-var Hapi = require('hapi');
+const Hapi = require('hapi');
 
-var server = new Hapi.Server();
-server.connection({ port: 3000 });
+const server = new Hapi.Server();
 
 server.register({register: require('@aptoma/hapi-graceful-stop'), options: {timeout: 2000}});
 
-server.start(function () {
-    console.log('Server running at:', server.info.uri);
-});
+server.start();
 
 ```
 
@@ -29,12 +26,11 @@ Running function after `server.stop()` e.g for ending db connections.
 
 ```javascript
 
-var Hapi = require('hapi');
+const Hapi = require('hapi');
 
-var server = new Hapi.Server();
-server.connection({ port: 3000 });
+const server = new Hapi.Server();
 
-var opts = {
+const opts = {
 	timeout: 2000, // optional, defaults to 5000 ms
 	afterStopTimeout: 1000, // optional, defaults to 2000 ms
 	afterStop: function (done) {
@@ -45,8 +41,6 @@ var opts = {
 
 server.register({register: require('@aptoma/hapi-graceful-stop'), options: opts});
 
-server.start(function () {
-    console.log('Server running at:', server.info.uri);
-});
+server.start();
 
 ```
