@@ -1,6 +1,6 @@
 {
   "name": "@aptoma/hapi-graceful-stop",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Hapi plugin for graceful stop",
   "main": "index.js",
   "engines": {
