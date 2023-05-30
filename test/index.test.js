@@ -17,14 +17,13 @@ describe('hapi-graceful-stop', () => {
 
 	it('should call server.stop on SIGINT signal', (done) => {
 		const server = new Hapi.Server();
-		server.register({plugin: gracefulStop, options: {timeout: 500}});
-
-
-		server.events.on('stop', () => {
-			done();
-		});
-
-		process.emit('SIGINT');
+		server
+			.register({plugin: gracefulStop, options: {timeout: 500}})
+			.then(() => server.start())
+			.then(() => {
+				server.events.on('stop', done);
+				process.emit('SIGINT');
+			});
 	});
 
 	it('should call option.afterStop', (done) => {
@@ -40,10 +39,8 @@ describe('hapi-graceful-stop', () => {
 
 		server
 			.register({plugin: gracefulStop, options: opts})
-			.then(() => {
-				process.emit('SIGINT');
-			})
-			.catch(done);
+			.then(() => server.start())
+			.then(() => process.emit('SIGINT'));
 	});
 
 	it('should call process.exit if option.afterStop times out', (done) => {
@@ -57,6 +54,7 @@ describe('hapi-graceful-stop', () => {
 
 		server
 			.register({plugin: gracefulStop, options: opts})
+			.then(() => server.start())
 			.then(() => {
 				process.exit = function (code) {
 					code.should.equal(0);
@@ -64,14 +62,14 @@ describe('hapi-graceful-stop', () => {
 				};
 
 				process.emit('SIGINT');
-			})
-			.catch(done);
+			});
 	});
 
 	it('should call process.exit', (done) => {
 		const server = new Hapi.Server();
 		server
 			.register({plugin: gracefulStop, options: {timeout: 1}})
+			.then(() => server.start())
 			.then(() => {
 				process.exit = function (code) {
 					code.should.equal(0);
@@ -79,8 +77,6 @@ describe('hapi-graceful-stop', () => {
 				};
 
 				process.emit('SIGINT');
-			})
-			.catch(done);
+			});
 	});
-
 });
