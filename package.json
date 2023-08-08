@@ -16,7 +16,7 @@
   "eslintConfig": {
     "extends": "@aptoma/eslint-config",
     "parserOptions": {
-      "ecmaVersion": "2017"
+      "ecmaVersion": 2023
     },
     "env": {
       "node": true,
@@ -35,14 +35,16 @@
     "url": "https://github.com/aptoma/hapi-graceful-stop/issues"
   },
   "homepage": "https://github.com/aptoma/hapi-graceful-stop",
-  "dependencies": {},
+  "dependencies": {
+    "lil-http-terminator": "^1.2.3"
+  },
   "devDependencies": {
     "@aptoma/eslint-config": "^7.0.1",
-    "@hapi/hapi": "^18.3.1",
-    "eslint": "^6.0.1",
-    "mocha": "^6.1.4",
-    "nyc": "^14.1.1",
-    "release-it": "^2.4.3",
+    "@hapi/hapi": "^21.3.2",
+    "eslint": "^8.41.0",
+    "mocha": "^10.2.0",
+    "nyc": "^15.1.0",
+    "release-it": "^15.10.3",
     "should": "^13.2.3"
   }
 }
