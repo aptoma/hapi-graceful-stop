@@ -6,77 +6,85 @@ require('should');
 describe('hapi-graceful-stop', () => {
 	const orgExit = process.exit;
 
-	beforeEach(() => {
-		process.removeAllListeners('SIGINT');
-		process.exit = () => {};
-	});
+	[
+		'SIGINT',
+		'SIGTERM'
+	].forEach((signal) => {
+		describe(signal, () => {
 
-	afterEach(() => {
-		process.exit = orgExit;
-	});
-
-	it('should call server.stop on SIGINT signal', (done) => {
-		const server = new Hapi.Server();
-		server
-			.register({plugin: gracefulStop, options: {timeout: 500}})
-			.then(() => server.start())
-			.then(() => {
-				server.events.on('stop', done);
-				process.emit('SIGINT');
+			beforeEach(() => {
+				process.removeAllListeners(signal);
+				process.exit = () => {};
 			});
-	});
 
-	it('should call option.afterStop', (done) => {
-		const server = new Hapi.Server();
+			afterEach(() => {
+				process.exit = orgExit;
+			});
 
-		const opts = {
-			timeout: 500,
-			afterStop(cb) {
-				cb(); // eslint-disable-line callback-return
-				done();
-			}
-		};
+			it('should call server.stop', (done) => {
+				const server = new Hapi.Server();
+				server
+					.register({plugin: gracefulStop, options: {timeout: 500}})
+					.then(() => server.start())
+					.then(() => {
+						server.events.on('stop', done);
+						process.emit(signal);
+					});
+			});
 
-		server
-			.register({plugin: gracefulStop, options: opts})
-			.then(() => server.start())
-			.then(() => process.emit('SIGINT'));
-	});
+			it('should call option.afterStop', (done) => {
+				const server = new Hapi.Server();
 
-	it('should call process.exit if option.afterStop times out', (done) => {
-		const server = new Hapi.Server();
-
-		const opts = {
-			timeout: 500,
-			afterStopTimeout: 1,
-			afterStop: () => {}
-		};
-
-		server
-			.register({plugin: gracefulStop, options: opts})
-			.then(() => server.start())
-			.then(() => {
-				process.exit = function (code) {
-					code.should.equal(0);
-					done();
+				const opts = {
+					timeout: 500,
+					afterStop(cb) {
+						cb(); // eslint-disable-line callback-return
+						done();
+					}
 				};
 
-				process.emit('SIGINT');
+				server
+					.register({plugin: gracefulStop, options: opts})
+					.then(() => server.start())
+					.then(() => process.emit(signal));
 			});
-	});
 
-	it('should call process.exit', (done) => {
-		const server = new Hapi.Server();
-		server
-			.register({plugin: gracefulStop, options: {timeout: 1}})
-			.then(() => server.start())
-			.then(() => {
-				process.exit = function (code) {
-					code.should.equal(0);
-					done();
+			it('should call process.exit if option.afterStop times out', (done) => {
+				const server = new Hapi.Server();
+
+				const opts = {
+					timeout: 500,
+					afterStopTimeout: 1,
+					afterStop: () => {}
 				};
 
-				process.emit('SIGINT');
+				server
+					.register({plugin: gracefulStop, options: opts})
+					.then(() => server.start())
+					.then(() => {
+						process.exit = function (code) {
+							code.should.equal(0);
+							done();
+						};
+
+						process.emit(signal);
+					});
 			});
+
+			it('should call process.exit', (done) => {
+				const server = new Hapi.Server();
+				server
+					.register({plugin: gracefulStop, options: {timeout: 1}})
+					.then(() => server.start())
+					.then(() => {
+						process.exit = function (code) {
+							code.should.equal(0);
+							done();
+						};
+
+						process.emit(signal);
+					});
+			});
+		});
 	});
 });
