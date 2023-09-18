@@ -32,8 +32,8 @@ module.exports = {
 			gracefulTerminationTimeout: timeout * 0.9
 		});
 
-		process.on('SIGINT', async () => {
-			server.log('graceful-stop', `Received SIGINT, initiating graceful stop with timeout ${timeout} ms`);
+		async function shutdown(signal) {
+			server.log('graceful-stop', `Received ${signal}, initiating graceful stop with timeout ${timeout} ms`);
 
 			server.events.on('stop', () => {
 				exit(afterStopTimeout, options.afterStop, server);
@@ -42,6 +42,9 @@ module.exports = {
 			await terminator.terminate();
 			await server.stop({timeout: afterStopTimeout});
 			server.log('graceful-stop', 'Server stopped');
-		});
+		}
+
+		process.on('SIGINT', async () => await shutdown('SIGINT'));
+		process.on('SIGTERM', async () => await shutdown('SIGTERM'));
 	}
 };
