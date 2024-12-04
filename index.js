@@ -44,7 +44,7 @@ module.exports = {
 			server.log('graceful-stop', 'Server stopped');
 		}
 
-		process.on('SIGINT', async () => await shutdown('SIGINT'));
-		process.on('SIGTERM', async () => await shutdown('SIGTERM'));
+		process.once('SIGINT', async () => await shutdown('SIGINT'));
+		process.once('SIGTERM', async () => await shutdown('SIGTERM'));
 	}
 };
