@@ -32,13 +32,12 @@ module.exports = {
 			gracefulTerminationTimeout: timeout * 0.9
 		});
 
+		server.events.on('stop', () => {
+			exit(afterStopTimeout, options.afterStop, server);
+		});
+
 		async function shutdown(signal) {
 			server.log('graceful-stop', `Received ${signal}, initiating graceful stop with timeout ${timeout} ms`);
-
-			server.events.on('stop', () => {
-				exit(afterStopTimeout, options.afterStop, server);
-			});
-
 			await terminator.terminate();
 			await server.stop({timeout: afterStopTimeout});
 			server.log('graceful-stop', 'Server stopped');
