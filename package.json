@@ -1,50 +1,48 @@
 {
-  "name": "@aptoma/hapi-graceful-stop",
-  "version": "3.3.1",
-  "description": "Hapi plugin for graceful stop",
-  "main": "index.js",
-  "engines": {
-    "node": ">=10.0.0"
-  },
-  "scripts": {
-    "lint": "eslint --ext '.js' test index.js",
-    "test": "npm run lint && nyc --reporter=text-summary --reporter=lcov mocha --exit 'test/**/*.test.js'",
-    "release": "npm test && release-it -n -i patch",
-    "release:minor": "npm test && release-it -n -i minor",
-    "release:major": "npm test && release-it -n -i major"
-  },
-  "eslintConfig": {
-    "extends": "@aptoma/eslint-config",
-    "parserOptions": {
-      "ecmaVersion": 2023
-    },
-    "env": {
-      "node": true,
-      "mocha": true,
-      "es6": true
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/aptoma/hapi-graceful-stop"
-  },
-  "keywords": [],
-  "author": "Martin Jonsson <martin@aptoma.com>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/aptoma/hapi-graceful-stop/issues"
-  },
-  "homepage": "https://github.com/aptoma/hapi-graceful-stop",
-  "dependencies": {
-    "lil-http-terminator": "^1.2.3"
-  },
-  "devDependencies": {
-    "@aptoma/eslint-config": "^7.0.1",
-    "@hapi/hapi": "^21.3.2",
-    "eslint": "^8.41.0",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
-    "release-it": "^15.10.3",
-    "should": "^13.2.3"
-  }
+	"name": "@aptoma/hapi-graceful-stop",
+	"version": "3.3.1",
+	"description": "Hapi plugin for graceful stop",
+	"main": "index.js",
+	"types": "types.ts",
+	"engines": {
+		"node": ">=22.0.0"
+	},
+	"scripts": {
+		"lint": "biome check --write",
+		"test": "node --test && npm run lint",
+		"release": "npm test && release-it -n -i patch",
+		"release:minor": "npm test && release-it -n -i minor",
+		"release:major": "npm test && release-it -n -i major"
+	},
+	"eslintConfig": {
+		"extends": "@aptoma/eslint-config",
+		"parserOptions": {
+			"ecmaVersion": 2024
+		},
+		"env": {
+			"node": true,
+			"mocha": true,
+			"es6": true
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/aptoma/hapi-graceful-stop"
+	},
+	"keywords": [],
+	"author": "Martin Jonsson <martin@aptoma.com>",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/aptoma/hapi-graceful-stop/issues"
+	},
+	"homepage": "https://github.com/aptoma/hapi-graceful-stop",
+	"dependencies": {
+		"lil-http-terminator": "^1.2.3"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.1.2",
+		"@hapi/hapi": "^21.3.2",
+		"@types/node": "^22.16.5",
+		"release-it": "^15.10.3"
+	}
 }

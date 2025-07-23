@@ -1,17 +1,13 @@
-'use strict';
+const {describe, beforeEach, it, afterEach} = require('node:test');
+const assert = require('node:assert/strict');
 const Hapi = require('@hapi/hapi');
 const gracefulStop = require('..');
-require('should');
 
 describe('hapi-graceful-stop', () => {
 	const orgExit = process.exit;
 
-	[
-		'SIGINT',
-		'SIGTERM'
-	].forEach((signal) => {
+	['SIGINT', 'SIGTERM'].forEach((signal) => {
 		describe(signal, () => {
-
 			beforeEach(() => {
 				process.removeAllListeners(signal);
 				process.exit = () => {};
@@ -21,35 +17,34 @@ describe('hapi-graceful-stop', () => {
 				process.exit = orgExit;
 			});
 
-			it('should call server.stop', (done) => {
+			it('should call server.stop', async () => {
 				const server = new Hapi.Server();
-				server
-					.register({plugin: gracefulStop, options: {timeout: 500}})
-					.then(() => server.start())
-					.then(() => {
-						server.events.on('stop', done);
-						process.emit(signal);
-					});
+				await server.register({plugin: gracefulStop, options: {timeout: 500}});
+				await server.start();
+				const {promise, resolve} = Promise.withResolvers();
+				server.events.on('stop', () => resolve(true));
+				process.emit(signal);
+				assert(await promise);
 			});
 
-			it('should call option.afterStop', (done) => {
+			it('should call option.afterStop', async () => {
 				const server = new Hapi.Server();
 
+				const {promise, resolve} = Promise.withResolvers();
 				const opts = {
 					timeout: 500,
-					afterStop(cb) {
-						cb(); // eslint-disable-line callback-return
-						done();
+					afterStop() {
+						resolve(true);
 					}
 				};
 
-				server
-					.register({plugin: gracefulStop, options: opts})
-					.then(() => server.start())
-					.then(() => process.emit(signal));
+				await server.register({plugin: gracefulStop, options: opts});
+				await server.start();
+				process.emit(signal);
+				assert(await promise);
 			});
 
-			it('should call process.exit if option.afterStop times out', (done) => {
+			it('should call process.exit if option.afterStop times out', async () => {
 				const server = new Hapi.Server();
 
 				const opts = {
@@ -58,33 +53,48 @@ describe('hapi-graceful-stop', () => {
 					afterStop: () => {}
 				};
 
-				server
-					.register({plugin: gracefulStop, options: opts})
-					.then(() => server.start())
-					.then(() => {
-						process.exit = function (code) {
-							code.should.equal(0);
-							done();
-						};
+				await server.register({plugin: gracefulStop, options: opts});
+				await server.start();
 
-						process.emit(signal);
-					});
+				const {promise, resolve} = Promise.withResolvers();
+				process.exit = (code) => {
+					resolve(code);
+				};
+
+				process.emit(signal);
+				assert.equal(await promise, 0);
 			});
 
-			it('should call process.exit', (done) => {
+			it('should call process.exit', async () => {
 				const server = new Hapi.Server();
-				server
-					.register({plugin: gracefulStop, options: {timeout: 1}})
-					.then(() => server.start())
-					.then(() => {
-						process.exit = function (code) {
-							code.should.equal(0);
-							done();
-						};
+				await server.register({plugin: gracefulStop, options: {timeout: 1}});
+				await server.start();
 
-						process.emit(signal);
-					});
+				const {promise, resolve} = Promise.withResolvers();
+				process.exit = (code) => {
+					resolve(code);
+				};
+
+				process.emit(signal);
+				assert.equal(await promise, 0);
 			});
 		});
+	});
+
+	it('should call postStop if server was stopped manually', async () => {
+		const server = new Hapi.Server();
+
+		const {promise, resolve} = Promise.withResolvers();
+		const opts = {
+			timeout: 500,
+			afterStop() {
+				resolve(true);
+			}
+		};
+
+		await server.register({plugin: gracefulStop, options: opts});
+		await server.start();
+		await server.stop();
+		assert(await promise);
 	});
 });
