@@ -31,6 +31,7 @@ module.exports = {
 	 */
 	register(server, options) {
 		const timeout = options.timeout || 5000;
+		const beforeStopTimeout = options.beforeStopTimeout || 2000;
 		const afterStopTimeout = options.afterStopTimeout || 2000;
 
 		const terminator = createHttpTerminator({
@@ -50,6 +51,7 @@ module.exports = {
 				'graceful-stop',
 				`Received ${signal}, initiating graceful stop with timeout ${timeout} ms`
 			);
+			await preHook(beforeStopTimeout, options.beforeStop, server);
 			await terminator.terminate();
 			await server.stop({timeout: afterStopTimeout});
 			await postHookPromise;
@@ -61,3 +63,31 @@ module.exports = {
 		process.once('SIGTERM', async () => await shutdown('SIGTERM'));
 	}
 };
+
+async function preHook(timeout, fn, server) {
+	if (typeof fn !== 'function') {
+		return;
+	}
+
+	server.log(
+		'graceful-stop',
+		`Running options.beforeStop function with timeout ${timeout} ms`
+	);
+
+	let id;
+	try {
+		await Promise.race([
+			new Promise((resolve) => {
+				id = setTimeout(() => {
+					server.log('graceful-stop', 'options.beforeStop function timeout');
+					resolve();
+				}, timeout).unref();
+			}),
+			fn()
+		]);
+	} catch (error) {
+		server.log(['graceful-stop', 'error'], error);
+	} finally {
+		clearTimeout(id);
+	}
+}
